@@ -1,8 +1,16 @@
+using System.Collections.Generic;
 using WebApp.Model;
-namespace WebApp.Controllers.Views;
+namespace WebApp.Views;
+// Just as a basic example.
+// !!! Please DO NOT USE like this!!!
+//
+// Blazor / Razor: HTML code is used here and with
+// the help of C# helpers tags "@" C# code is embedded
+// in HTML
+// (see lecture Web Clients)   
 
-public static class Views {
-   
+public static class HtmlViews {
+   // Fake HTML views with string interpolation
    public static string BookDetails(Book book) {
       string html =
          "<!DOCTYPE html>\n" +
@@ -42,23 +50,22 @@ public static class Views {
          "</tr>\n" +
          "</thead>\n" +
          "<tbody>\n";
-         
-         foreach(var book in books) {
-            html +=
-               "<tr>\n" + 
-               $"<td>{book.Id.ToString()[0..10]}</td>\n" +
-               $"<td>{book.Author}</td>\n" +
-               $"<td>{book.Title}</td>\n" +
-               $"<td>{book.Year}</td>\n" +
-               "</tr>\n";
-         }
+
+      foreach (var book in books) {
          html +=
-            "</tbody>\n" +
-            "</table>\n" +
-            "</body>\n" +
-            "</html>";
-            
-         return html;
-      }   
-      
+            "<tr>\n" +
+            $"<td>{book.Id.ToString()[0..10]}</td>\n" +
+            $"<td>{book.Author}</td>\n" +
+            $"<td>{book.Title}</td>\n" +
+            $"<td>{book.Year}</td>\n" +
+            "</tr>\n";
+      }
+      html +=
+         "</tbody>\n" +
+         "</table>\n" +
+         "</body>\n" +
+         "</html>";
+
+      return html;
+   }
 }
