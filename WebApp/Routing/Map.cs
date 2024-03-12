@@ -1,13 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using WebApp.Views;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Primitives;
 using WebApp.Model;
 using WebApp.Persistence;
-namespace WebApp;
+using WebApp.Views;
+namespace WebApp.Routing;
 
 public static class Map {
 
@@ -43,6 +47,7 @@ public static class Map {
       app.MapPost  ("/products/books", Post); 
       app.MapDelete("/products/books/{id:guid}", Delete);  
    }
+   
    // Books endpoint handlers
    private static IResult Get() {
       // find data
@@ -63,7 +68,34 @@ public static class Map {
       return Results.Content(html, "text/html");
    }
 
-   private static IResult Post(Book book) {
+   // Book is posted as form data (table form)
+   private static IResult Post(HttpContext context) {
+
+      // Ensure the request content type is x-www-form-urlencoded
+      if (!context.Request.HasFormContentType)
+         return Results.BadRequest("This request is not a valid form submission.");
+
+      // body a key/value form file
+      IFormCollection form = context.Request.Form;
+      
+      // Validate and parse the Guid
+      if (!Guid.TryParse(form["id"], out Guid id))
+         return Results.BadRequest("Invalid ID format.");
+      // Validate and parse the string
+      string author = form["author"].ToString() ?? "";
+      string title  = form["title"].ToString() ?? "";
+      // Validate and parse the year
+      if(!int.TryParse(form["year"], out int year))
+         return Results.BadRequest("Invalid year format.");
+
+      // create a book object
+      Book book = new Book {
+         Id = id,
+         Author = author,
+         Title = title,
+         Year = year
+      };
+      
       // save data
       if (repository.FindById(book.Id) != null)
          return Results.BadRequest("Book already exists.");
@@ -71,13 +103,17 @@ public static class Map {
       // return HTTP response
       return Results.Created($"/books/{book.Id}", book);
    }
-
+   
    private static IResult Delete(Guid id) {
-      // remove data
+      // find book
       var book = repository.FindById(id);
+      if(book == null) return Results.NotFound("Delete: Book not found.");
+      // remove book
       repository.Delete(book);
       // return HTTP response
       return Results.NoContent();
+      if(book == null) return Results.NotFound("Book not found.");
+
    }
 }
 

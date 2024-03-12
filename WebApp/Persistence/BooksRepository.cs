@@ -27,7 +27,7 @@ public class BooksRepository {
       }
    }  
    
-   public IEnumerable<Book> Select() {
+   public IReadOnlyCollection<Book> Select() {
       return _books.Values.ToList();
    }
 
