@@ -18,12 +18,10 @@ public static class Map {
    // S T A T I C   F I L E S
    // -----------------------
    // Static Files Routing
+   // http://localhost:5100/index.html
    public static void StaticFilesRoutes(WebApplication app) {
       app.MapGet("/",      () => GetStaticFiles(app, "index.html"));
-      // http://localhost:5100/index.html
       app.MapGet("/index", () => GetStaticFiles(app, "index.html"));
-      // http://localhost:5010/page1
-      // http://localhost:5010/page2
       app.MapGet("/page1", () => GetStaticFiles(app, "page1.html"));
       app.MapGet("/page2", () => GetStaticFiles(app, "page2.html"));
    }
@@ -31,14 +29,18 @@ public static class Map {
    // Static Files Endpoint Handler
    private static IResult GetStaticFiles(WebApplication app, string page) {
       string filePath = Path.Combine(app.Environment.WebRootPath, page);
+      FileInfo fileInfo = new(filePath);      
+      if (!File.Exists(filePath)) return Results.NotFound($"{page} not found");
+//    files under wwwroot should be read-only
+//    if (!fileInfo.IsReadOnly)   return Results.BadRequest($"{page} is not read-only");
       string content = File.ReadAllText(filePath);
       return Results.Content(content, "text/html");
    }
-
    
    // B O O K S 
    // -----------------------
-   private static readonly BooksRepository repository =  new BooksRepository();
+   private static readonly DataContextFake     _dataContext =  new ();
+   private static readonly BooksRepositoryFake repository =  new (_dataContext);
    
    // Books Routing
    public static void BookRoutes(WebApplication app) {
@@ -112,8 +114,6 @@ public static class Map {
       repository.Delete(book);
       // return HTTP response
       return Results.NoContent();
-      if(book == null) return Results.NotFound("Book not found.");
-
    }
 }
 
