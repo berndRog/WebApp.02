@@ -39,8 +39,8 @@ public static class Map {
    
    // B O O K S 
    // -----------------------
-   private static readonly DataContextFake     _dataContext =  new ();
-   private static readonly BooksRepositoryFake repository =  new (_dataContext);
+   private static readonly DataContextFake     dataContext =  new ();
+   private static readonly BooksRepositoryFake repository =  new (dataContext);
    
    // Books Routing
    public static void BookRoutes(WebApplication app) {
@@ -100,8 +100,10 @@ public static class Map {
       
       // save data
       if (repository.FindById(book.Id) != null)
-         return Results.BadRequest("Book already exists.");
+         return Results.Conflict("Book already exists.");
       repository.Add(book);
+      dataContext.SaveAllChanges();
+      
       // return HTTP response
       return Results.Created($"/books/{book.Id}", book);
    }
@@ -112,6 +114,8 @@ public static class Map {
       if(book == null) return Results.NotFound("Delete: Book not found.");
       // remove book
       repository.Delete(book);
+      dataContext.SaveAllChanges();
+      
       // return HTTP response
       return Results.NoContent();
    }
